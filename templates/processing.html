@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanning Crop - AI Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #1565c0;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+        }
+
+        .scan-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 0 auto 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            opacity: 0.7;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.3), transparent);
+            animation: scanMove 2s linear infinite;
+        }
+
+        @keyframes scanMove {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-steps {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .step.completed {
+            opacity: 1;
+            color: #4caf50;
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 30px;
+        }
+
+        .step-text {
+            text-align: left;
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .step-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .loading-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2196f3, #21cbf3);
+            border-radius: 4px;
+            width: 0%;
+            animation: progressFill 3s ease-in-out forwards;
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            25% { width: 30%; }
+            50% { width: 65%; }
+            75% { width: 85%; }
+            100% { width: 100%; }
+        }
+
+        .status-text {
+            color: #1565c0;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .scan-container { height: 250px; max-width: 350px; }
+            .progress-steps { padding: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .scan-container { height: 200px; max-width: 300px; }
+            .step { margin: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 AI Crop Analysis</h1>
+
+        <div class="scan-container">
+            <img src="{{ url_for('static', filename=image_path) }}" alt="Crop being scanned" class="scan-image">
+            <div class="scan-overlay"></div>
+        </div>
+
+        <div class="progress-steps">
+            <div class="step active" id="step1">
+                <div class="step-icon">📷</div>
+                <div class="step-text">
+                    <div class="step-title">Image Acquisition</div>
+                    <div class="step-description">Loading and preprocessing crop image</div>
+                </div>
+            </div>
+
+            <div class="step" id="step2">
+                <div class="step-icon">🔬</div>
+                <div class="step-text">
+                    <div class="step-title">Feature Extraction</div>
+                    <div class="step-description">Analyzing color patterns and textures</div>
+                </div>
+            </div>
+
+            <div class="step" id="step3">
+                <div class="step-icon">🤖</div>
+                <div class="step-text">
+                    <div class="step-title">AI Analysis</div>
+                    <div class="step-description">Running deep learning models</div>
+                </div>
+            </div>
+
+            <div class="step" id="step4">
+                <div class="step-icon">📊</div>
+                <div class="step-text">
+                    <div class="step-title">Result Compilation</div>
+                    <div class="step-description">Generating diagnosis and solutions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="status-text" id="statusText">
+            Initializing scan<span class="loading-dots"></span>
+        </div>
+    </div>
+
+    <script>
+        // Simulate scanning process with step updates
+        const steps = document.querySelectorAll('.step');
+        const statusText = document.getElementById('statusText');
+        const stepMessages = [
+            "Loading and preprocessing crop image...",
+            "Extracting visual features and patterns...",
+            "Running AI disease detection models...",
+            "Compiling results and recommendations...",
+            "Scan complete! Redirecting to results..."
+        ];
+
+        let currentStep = 0;
+
+        function updateProgress() {
+            if (currentStep > 0) {
+                steps[currentStep - 1].classList.remove('active');
+                steps[currentStep - 1].classList.add('completed');
+            }
+
+            if (currentStep < steps.length) {
+                steps[currentStep].classList.add('active');
+                statusText.innerHTML = stepMessages[currentStep] + '<span class="loading-dots"></span>';
+            }
+
+            currentStep++;
+        }
+
+        // Start progress updates
+        setTimeout(() => updateProgress(), 1000);
+        setTimeout(() => updateProgress(), 2500);
+        setTimeout(() => updateProgress(), 4000);
+        setTimeout(() => updateProgress(), 5500);
+
+        // Redirect to results after scan completion
+        setTimeout(() => {
+            statusText.innerHTML = "✅ Scan complete! Redirecting to results...";
+            setTimeout(() => {
+                window.location.href = "{{ url_for('process_scan') }}?source={{ source }}&image_path={{ image_path }}";
+            }, 1000);
+        }, 7000);
+    </script>
+</body>
+</html>

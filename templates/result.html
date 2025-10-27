@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Result - AI Crop Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h2 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .scan-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .crop-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .result-section {
+            text-align: left;
+            margin: 25px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .result-section h3 {
+            color: #2e7d32;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+        }
+
+        .result-section p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #4caf50, #81c784);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .disease-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .healthy { background: #c8e6c9; color: #2e7d32; }
+        .warning { background: #fff9c4; color: #f57f17; }
+        .critical { background: #ffcdd2; color: #c62828; }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 30px;
+            background: #43a047;
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: #ff9800;
+        }
+
+        .btn-secondary:hover {
+            background: #f57c00;
+        }
+
+        .btn-tertiary {
+            background: #2196f3;
+        }
+
+        .btn-tertiary:hover {
+            background: #1976d2;
+        }
+
+        /* Responsive design */
+        @media screen and (max-width: 768px) {
+            h2 { font-size: 1.6rem; }
+            .card { padding: 20px; margin: 15px auto; }
+            .btn { padding: 12px 25px; font-size: 0.9rem; min-width: 180px; }
+            .btn-container { flex-direction: column; align-items: center; }
+            .result-section { padding: 15px; }
+        }
+
+        @media screen and (max-width: 480px) {
+            body { padding: 15px; }
+            h2 { font-size: 1.4rem; }
+            .card { padding: 15px; }
+            .btn { width: 100%; max-width: 250px; }
+            .result-section h3 { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🌿 Crop Scan Result 🌿</h2>
+        <p class="subtitle">AI-powered analysis complete</p>
+
+        <div class="scan-info">
+            📊 Analysis Confidence: <span class="confidence-badge">{{ (confidence * 100)|int }}%</span>
+            {% if source == 'random' %}
+            • 🎲 Random Dataset Image
+            {% else %}
+            • 📁 Uploaded Image
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <img src="{{ url_for('static', filename=img_name) }}" alt="Scanned Crop" class="crop-image"
+                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+
+            <div class="result-section">
+                <h3>
+                    🔍 Diagnosis
+                    <span class="disease-indicator {% if 'healthy' in disease.lower() %}healthy{% elif 'unknown' in disease.lower() %}warning{% else %}critical{% endif %}">
+                        {% if 'healthy' in disease.lower() %}🟢 Healthy{% elif 'unknown' in disease.lower() %}🟡 Unknown{% else %}🔴 Disease Detected{% endif %}
+                    </span>
+                </h3>
+                <p><strong>{{ disease }}</strong></p>
+            </div>
+
+            <div class="result-section">
+                <h3>💡 Recommended Treatment</h3>
+                <p>{{ solution }}</p>
+            </div>
+
+            <div class="result-section">
+                <h3>🛡️ Prevention Tips</h3>
+                <p>{{ prevention }}</p>
+            </div>
+
+            <div class="result-section">
+                <h3>📋 Next Steps</h3>
+                <p>• Monitor plant progress daily</p>
+                <p>• Implement recommended treatment immediately</p>
+                <p>• Consult agricultural expert if condition worsens</p>
+                <p>• Consider soil testing for comprehensive analysis</p>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <a class="btn" href="{{ url_for('auto_scan') }}">
+                🔄 Scan Another Crop
+            </a>
+            <a class="btn btn-secondary" href="{{ url_for('scan_random') }}">
+                🎲 Another Random Scan
+            </a>
+            <a class="btn btn-tertiary" href="{{ url_for('index') }}">
+                🏠 Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Add interactive effects
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add loading state for Scan Another Crop button
+        document.querySelector('.btn').addEventListener('click', function(e) {
+            this.innerHTML = '🔄 Selecting Random Crop...';
+            this.style.opacity = '0.7';
+            this.style.pointerEvents = 'none';
+        });
+    </script>
+</body>
+</html>
